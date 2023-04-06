@@ -6,6 +6,29 @@ This repository contains the design and implementation of a True Random Number G
 - PYNQ v3.1
 - Vivado Design Suite version 2022.1
 
+## Hardware design
+
+### Pre-design assessments:
+
+For random number generation on a Zync Ultrascale+ device, I decided to utilize the jitter noise present in ring oscillators (ROs). To investigate the nature of this jitter noise, I utilized simple counters to count the number of rising edges of the ROs over various spans of time, measured using the MPSoC clock. Through this process, I observed that the time series of the counts over five different randomly placed ROs were not correlated with each other for short durations, but highly correlated for longer durations.
+
+This suggests the existence of significant zero-mean jitter noise (or some other zero-mean phenomenon that leads to the fluctuation of the counts). To illustrate this correlation behavior, I have included a figure depicting correlations for various time durations. The following figure depicts the correlations for various time durations,
+
+![Alt text](https://github.com/sarashs/TRNG/blob/main/Images/ro_correlations.png)
+ 
+
+### The design:
+
+My design is simple, featuring a single-stage ring oscillator (RO) connected to a D flip-flop and clocked by it. While some academic papers may underestimate the value of such simple designs, my own assessments and final outcomes have demonstrated that this approach produces high-quality random numbers. However, I did need to address the issue of an appropriate balance between 0s and 1s, which I achieved by incorporating a simple hash function into the Verilog code.
+
+To optimize power usage, I decided to use a NAND gate with a control signal that comes from the Axi Lite interface to turn the ROs on and off. Additionally, I utilized the Xilinx Axi Lite IP interface with two registers - one for the control signal and the other for the generated random number.
+
+My design balances simplicity, power efficiency, and high-quality random number generation. It is a well-thought-out solution that meets the needs of my project.
+
+![Alt text](https://github.com/sarashs/TRNG/blob/main/Images/Design.png)
+
+The block diagram of the system coupled with the MPSoC is as follows, where the TRNG_Axi_lite_0 is the IP depicted above.
+
 ![Alt text](https://github.com/sarashs/TRNG/blob/main/Images/block_diagram.jpg)
 
 ## Building the TRNG
@@ -33,7 +56,7 @@ Take the following steps,
 		```
 	7. Generate the bitstream: In the Flow Navigator, click on "Generate Bitstream" to generate the bitstream for the design.
 
-
+	Note: The data folder includes some sample data for statistical analysis.
 
 ## Statistical Test Results
 
